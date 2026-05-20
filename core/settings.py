@@ -218,7 +218,20 @@ TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='YOUR_REAL_BOT_TOKEN_H
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}'
 
 # ==========================================
-# 🔐 AUTHENTICATION SETTINGS
+# 🔐 SOVEREIGN LICENSE GATEKEEPER
 # ==========================================
+# Proyek ini memerlukan License Key yang valid untuk dijalankan.
+# Jika Anda mendapatkan kode ini dari GitHub, silakan hubungi:
+# teknogenx@gmail.com untuk mendapatkan kunci akses.
+SOVEREIGN_LICENSE_KEY = config('SOVEREIGN_LICENSE_KEY', default='')
+
+if not SOVEREIGN_LICENSE_KEY:
+    import sys
+    print("\n" + "!"*60)
+    print("ERROR: SOVEREIGN_LICENSE_KEY TIDAK DITEMUKAN!")
+    print("SovereignDrive AI memerlukan lisensi untuk dijalankan.")
+    print("Silakan hubungi teknogenx@gmail.com untuk meminta akses.")
+    print("!"*60 + "\n")
+    # sys.exit(1) # Uncomment ini di produksi untuk menghentikan server jika tanpa lisensi
 LOGIN_REDIRECT_URL = 'storage:dashboard'
 LOGOUT_REDIRECT_URL = 'storage:landing'

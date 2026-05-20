@@ -75,8 +75,18 @@ Interested in deploying **SovereignDrive AI** for your organization? We offer:
 *   **SSO/AD Custom Integration:** Tailored identity management.
 *   **SLA & Dedicated Support:** Priority maintenance for corporate clients.
 
-**Contact for Sales & Partnerships:**
-📧 **Email:** sales@teknogenx.com / andi@teknogenx.com
+---
+
+## 🔒 Request Access & License Key
+
+**SovereignDrive AI** is not an open-distribution project. To obtain the code or a valid **Sovereign License Key** to run the software, you must:
+
+1. Send an inquiry email to **teknogenx@gmail.com**.
+2. Mention your organization and intended use case.
+3. Once approved, you will receive access to the private repository and an authorized license key.
+
+**Contact for Access:**
+📧 **Email:** teknogenx@gmail.com
 🌐 **Website:** [www.teknogenx.com](https://www.teknogenx.com)
 📱 **LinkedIn:** [Andi Liani](https://linkedin.com/in/andiliani)
 
