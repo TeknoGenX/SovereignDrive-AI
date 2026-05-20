@@ -1,45 +1,36 @@
-# 📖 API Reference: AwanDrive X (v1.0)
+# 📖 API Reference: SovereignDrive AI (v1.0)
 
-Dokumentasi teknis untuk integrasi pihak ketiga, aplikasi Mobile (Flutter), dan Desktop.  
+Technical documentation for third-party integrations, Mobile (Flutter), and Desktop applications.  
 **Base URL:** `http://localhost:8000/api/storage/v1/`
 
 ---
 
 ## 🛠️ Global Configuration
-Seluruh request harus menyertakan header berikut:
-| Header | Value | Deskripsi |
+All requests must include the following headers:
+| Header | Value | Description |
 | :--- | :--- | :--- |
-| `Accept` | `application/json` | Format data yang diharapkan |
-| `Authorization` | `Bearer <token>` | Token akses JWT (untuk endpoint terproteksi) |
+| `Accept` | `application/json` | Expected data format |
+| `Authorization` | `Bearer <token>` | JWT Access Token (for protected endpoints) |
 
 ### HTTP Status Codes
-*   `200 OK`: Request berhasil.
-*   `201 Created`: Resource baru berhasil dibuat.
-*   `401 Unauthorized`: Token tidak valid atau kedaluwarsa.
-*   `403 Forbidden`: Anda tidak memiliki izin untuk akses resource ini.
-*   `404 Not Found`: Objek (File/Folder) tidak ditemukan.
+*   `200 OK`: Request successful.
+*   `201 Created`: New resource successfully created.
+*   `401 Unauthorized`: Token invalid or expired.
+*   `403 Forbidden`: You do not have permission to access this resource.
+*   `404 Not Found`: Object (File/Folder) not found.
 
 ---
 
-## 🔐 Authentication (JWT)
-Menggunakan standar OAuth2/JWT. Token akses berlaku selama 60 menit.
+## 🔐 Authentication (JWT & SSO)
+Using OAuth2/JWT standard. Access tokens are valid for 60 minutes.
 
-### 1. Login
+### 1. Login (Standard)
 *   **POST** `/auth/login/`
-*   **Payload:**
-    ```json
-    {
-        "username": "admin",
-        "password": "password123"
-    }
-    ```
-*   **Success Response:**
-    ```json
-    {
-        "access": "eyJhbG...",
-        "refresh": "eyJhbG..."
-    }
-    ```
+*   **Payload:** `{ "username": "admin", "password": "password123" }`
+
+### 2. SSO Redirect
+*   **GET** `/social-auth/login/azuread-oauth2/` (Microsoft Azure AD)
+*   **GET** `/social-auth/login/google-oauth2/` (Google Workspace)
 
 ---
 
@@ -59,18 +50,17 @@ Menggunakan standar OAuth2/JWT. Token akses berlaku selama 60 menit.
 *   **GET** `/files/`
 
 ### 2. Smart AI Search (Elasticsearch)
-*   **GET** `/files/search/?q=laporan keuangan`
-*   **Fitur:** Mendukung *Fuzzy Search* (toleransi typo) dan *OCR Content Search*.
-*   **Ordering:** Hasil diurutkan berdasarkan skor relevansi AI tertinggi.
+*   **GET** `/files/search/?q=financial report`
+*   **Features:** Supports *Fuzzy Search* and *OCR Content Search*.
+*   **Ordering:** Results sorted by highest AI relevance score.
 
-### 3. Secure Download (Streaming)
+### 3. Secure Download (Streaming + DLP)
 *   **GET** `/files/<uuid>/download/`
-*   **Header:** Membutuhkan `Authorization`
-*   **Note:** File akan didekripsi secara *real-time* di sisi server menggunakan AES-256 GCM sebelum dikirim sebagai stream.
+*   **Note:** Files are decrypted real-time using AES-256 GCM. PDF files will have dynamic forensic watermarks injected.
 
 ---
 
-## 🔗 sharing & Collaboration
+## 🔗 Sharing & Collaboration
 ### 1. Generate Secure Link
 *   **POST** `/shares/`
 *   **Payload:**
@@ -86,21 +76,17 @@ Menggunakan standar OAuth2/JWT. Token akses berlaku selama 60 menit.
 ---
 
 ## 🏢 Enterprise Governance
-### 1. Polymorphic Audit Logs (Admin)
+### 1. Polymorphic Audit Logs (Admin Only)
 *   **GET** `/audit-logs/`
-*   **Data Fields:**
-    *   `target_id`: UUID objek yang diakses.
-    *   `target_type`: Tipe objek (`file`, `folder`, `sharedlink`).
-    *   `ip_address`: Lokasi akses user.
-    *   `user_agent`: Perangkat yang digunakan.
+*   **Data Fields:** `target_id`, `target_type`, `ip_address`, `user_agent`.
 
 ---
 
 ## 🚀 Large File Upload (Chunked)
-Gunakan alur ini untuk file > 100MB agar tidak terjadi *timeout*:
-1.  **Init:** `POST /files/start_chunked_upload/` -> Ambil `upload_id`.
-2.  **Upload:** `POST /files/upload_chunk/<upload_id>/` dengan parameter `chunk_index`.
-3.  **Merge:** `POST /files/complete_chunked_upload/<upload_id>/` untuk finalisasi.
+Use this flow for files > 100MB to avoid timeouts:
+1.  **Init:** `POST /files/start_chunked_upload/` -> Get `upload_id`.
+2.  **Upload:** `POST /files/upload_chunk/<upload_id>/` with `chunk_index`.
+3.  **Merge:** `POST /files/complete_chunked_upload/<upload_id>/` for finalization.
 
 ---
-*Dokumentasi ini dibuat secara otomatis untuk AwanDrive X Arsitektur. Gunakan Postman untuk melakukan testing endpoint.*
+*This documentation is auto-generated for SovereignDrive AI Architecture. Use Postman for endpoint testing.*

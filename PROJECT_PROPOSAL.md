@@ -1,8 +1,8 @@
-# 🏗️ Proposal Proyek: AwanDrive X - The Future of Private Cloud
+# 🏗️ Proposal Proyek: SovereignDrive AI - The Future of Private Cloud
 
 ## 1. HALAMAN JUDUL
-**Judul:** "Perancangan Sistem Cloud Storage Terpadu Berbasis AI & Keamanan Mandiri dengan Arsitektur Clean & Scalable (AwanDrive X)"  
-**Nama:** [Isi Nama Anda]  
+**Judul:** "Perancangan Sistem Cloud Storage Terpadu Berbasis AI & Keamanan Mandiri dengan Arsitektur Clean & Scalable (SovereignDrive AI)"  
+**Nama:** Andi Liani  
 **NIM:** [Isi NIM Anda]  
 **Mata Kuliah:** [Isi Mata Kuliah]  
 **Dosen:** [Isi Nama Dosen]  
@@ -11,14 +11,14 @@
 ---
 
 ## 2. RINGKASAN EKSEKUTIF
-**AwanDrive X** adalah platform *self-hosted cloud storage* cerdas yang dirancang untuk menjawab tantangan privasi data di era digital. Dikembangkan dengan arsitektur **Clean Architecture (Selectors & Services)**, sistem ini menawarkan kombinasi unik antara enkripsi **AES-256 GCM**, Pencarian Konten berbasis **AI OCR (Elasticsearch)**, dan kolaborasi real-time. Infrastruktur yang sepenuhnya **Docker-native** menjamin kemudahan replikasi dan skalabilitas tingkat enterprise.
+**SovereignDrive AI** adalah platform *self-hosted cloud storage* cerdas yang dirancang untuk menjawab tantangan privasi data di era digital. Dikembangkan dengan arsitektur **Clean Architecture (Selectors & Services)**, sistem ini menawarkan kombinasi unik antara enkripsi **AES-256 GCM**, Pencarian Konten berbasis **AI OCR (Elasticsearch)**, dan kolaborasi real-time. Infrastruktur yang sepenuhnya **Docker-native** menjamin kemudahan replikasi dan skalabilitas tingkat enterprise.
 
 ## 3. LATAR BELAKANG (Benchmarking)
 Meskipun layanan cloud publik telah mendominasi, terdapat gap signifikan dalam aspek kedaulatan data:
 *   **Google Drive:** Lemah pada privasi data (data dipindai untuk iklan/AI).
 *   **Dropbox:** Efisien dalam sinkronisasi, namun fitur AI pencarian konten terbatas.
 *   **MEGA:** Aman dengan E2EE, namun kaku dalam kolaborasi tim.
-*   **AwanDrive X** hadir untuk menutup celah ini dengan memberikan kontrol penuh (*full ownership*) tanpa mengorbankan fitur cerdas seperti OCR dan real-time collaboration.
+*   **SovereignDrive AI** hadir untuk menutup celah ini dengan memberikan kontrol penuh (*full ownership*) tanpa mengorbankan fitur cerdas seperti OCR dan real-time collaboration.
 
 ## 4. RUMUSAN MASALAH
 1.  Bagaimana mengimplementasikan sistem izin akses yang efisien pada struktur folder berjenjang (*Inherited Access*) tanpa membebani database?
@@ -33,7 +33,7 @@ Meskipun layanan cloud publik telah mendominasi, terdapat gap signifikan dalam a
 4.  **Infrastruktur Modern:** Mengotomatisasi deployment menggunakan **Docker-Compose** dengan PostgreSQL 16, Redis, dan Elasticsearch.
 
 ## 6. KEUNGGULAN KOMPETITIF (Unique Selling Points)
-| Fitur | AwanDrive X | Cloud Publik Biasa |
+| Fitur | SovereignDrive AI | Cloud Publik Biasa |
 | :--- | :--- | :--- |
 | **Arsitektur** | Clean Architecture (Modular) | Monolitik Terpusat |
 | **Pencarian** | **AI OCR:** Cari teks di FOTO/PDF | Terbatas pada Nama File |
@@ -49,21 +49,23 @@ Proyek ini menggunakan siklus **Research -> Strategy -> Execution** yang ketat:
 4.  **Validation:** Pengujian unit menggunakan **Django Test Suite** untuk memverifikasi logika akses dan integrasi audit.
 
 ## 8. SPESIFIKASI TEKNIS (The Engine)
-*   **Backend Framework:** Django 5.x (Python) - ASGI/Daphne.
+*   **Backend Framework:** Django 4.2.x (Python) - ASGI/Daphne.
 *   **Database:** PostgreSQL 16 (Relational Metadata).
 *   **Search Engine:** Elasticsearch 7.17 (Smart Indexing).
 *   **Task Queue:** Celery + Redis (Asynchronous AI Processing).
 *   **Security:** AES-256 GCM Encryption & Python-Decouple (.env).
-*   **NLP:** NLTK Preprocessing untuk pembersihan corpus pencarian.
+*   **SSO:** OAuth2/OIDC (Azure AD, Google Workspace).
+*   **DLP:** Dynamic Forensic Watermarking.
 
 ## 9. HASIL YANG TELAH DICAPAI
 *   ✅ **Clean Access Logic:** Pengecekan izin folder berjenjang yang stabil dan cepat.
 *   ✅ **RAM Efficiency:** Worker mampu memproses file hingga 50MB tanpa kebocoran memori menggunakan `NamedTemporaryFile`.
 *   ✅ **Search Scoring:** Integrasi pengurutan hasil pencarian berdasarkan skor relevansi Elasticsearch di Django ORM.
 *   ✅ **Docker Integration:** Infrastruktur satu-perintah (`docker-compose up`) yang stabil.
+*   ✅ **Enterprise Ready:** Fitur SSO dan DLP Watermarking telah diimplementasikan.
 
 ## 10. PENUTUP
-AwanDrive X membuktikan bahwa sistem cloud mandiri tidak harus lambat atau sulit digunakan. Dengan pendekatan *engineering* yang tepat pada manajemen memori dan optimasi query, kita dapat menciptakan platform penyimpanan yang secepat layanan publik namun seaman brankas pribadi.
+SovereignDrive AI membuktikan bahwa sistem cloud mandiri tidak harus lambat atau sulit digunakan. Dengan pendekatan *engineering* yang tepat pada manajemen memori dan optimasi query, kita dapat menciptakan platform penyimpanan yang secepat layanan publik namun seaman brankas pribadi.
 
 ---
 🚀 **Status Proyek:** *Verified & Production Ready.*
