@@ -232,6 +232,6 @@ if not SOVEREIGN_LICENSE_KEY:
     print("SovereignDrive AI memerlukan lisensi untuk dijalankan.")
     print("Silakan hubungi teknogenx@gmail.com untuk meminta akses.")
     print("!"*60 + "\n")
-    # sys.exit(1) # Uncomment ini di produksi untuk menghentikan server jika tanpa lisensi
+    sys.exit(1) # Hentikan server seketika jika tanpa lisensi
 LOGIN_REDIRECT_URL = 'storage:dashboard'
 LOGOUT_REDIRECT_URL = 'storage:landing'
