@@ -6,7 +6,7 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 
 from storage.models import File
-from .get_file_access_role import get_file_access_role
+from storage.selectors.access_selector import get_file_access_role
 
 @login_required
 def edit_file(request, file_id):

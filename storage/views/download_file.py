@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponseForbidden, StreamingHttpResponse
 
 from storage.models import File
-from .get_file_access_role import get_file_access_role
+from storage.selectors.access_selector import get_file_access_role
 from storage.services.encryption import decrypt_stream
 
 @login_required

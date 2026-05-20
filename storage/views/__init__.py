@@ -9,7 +9,6 @@ from .delete_folder import delete_folder
 from .download_file import download_file
 from .edit_file import edit_file
 from .file_detail import file_detail
-from .get_file_access_role import get_file_access_role
 from .get_user_profile import get_user_profile
 from .hard_delete_file import hard_delete_file
 from .hard_delete_folder import hard_delete_folder
