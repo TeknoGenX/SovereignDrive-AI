@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+/media/*
+!/media/avatars/
+!/media/avatars/Gemini_Generated_Image_.png
+!/media/avatars/Screenshot_from_2026-04-10_22-43-17.png
+
+# Celery & Logs
+celerybeat-schedule
+*.log
+celery.log
+
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project Specific
+*.pdf
+*.jpg
+*.png
+*.txt
+!README.md
+!TECHNICAL_ARCHITECTURE.md
+!PROJECT_PROPOSAL.md
+!STRATEGIC_ANALYSIS.md
+!API_REFERENCE.md
+!STORAGE_MIGRATION.md
+!test_kartu.txt

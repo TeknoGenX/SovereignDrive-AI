@@ -6,17 +6,18 @@ import os
 import hashlib
 import subprocess
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g$3ia0ohwoo0(u+#hvd1=s#&k)okt$77%=++x!$*34v0@nj@!5'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key')
 
 # ==========================================
 # 🔐 ENCRYPTION KEY (AES-256 HASHING)
 # ==========================================
-raw_key = os.environ.get('AES_MASTER_KEY', 'Rahasiacore256bitkunciku!!!').encode('utf-8')
+raw_key = config('AES_MASTER_KEY', default='fallback-encryption-key').encode('utf-8')
 AES_MASTER_KEY = hashlib.sha256(raw_key).digest() # Pasti 32-byte (256-bit)
 ENCRYPTION_KEY = SECRET_KEY 
 
@@ -157,11 +158,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'cloud_db'),
-        'USER': os.environ.get('DB_USER', 'cloud_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '@Sukaslamet123'),
-        'HOST': DB_HOST,
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': config('DB_NAME', default='cloud_db'),
+        'USER': config('DB_USER', default='cloud_user'),
+        'PASSWORD': config('DB_PASSWORD', default='@Sukaslamet123'),
+        'HOST': config('DB_HOST', default=DB_HOST),
+        'PORT': config('DB_PORT', default='5432'),
     }
 }
 
@@ -213,7 +214,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # ==========================================
 # 🤖 TELEGRAM BOT SETTINGS
 # ==========================================
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', 'YOUR_REAL_BOT_TOKEN_HERE')
+TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='YOUR_REAL_BOT_TOKEN_HERE')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}'
 
 # ==========================================
