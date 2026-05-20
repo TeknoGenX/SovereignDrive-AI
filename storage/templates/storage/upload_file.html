@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Unggah File - Awan{% endblock %}
+
+{% block extra_css %}
+<!-- Alpine.js untuk logika upload -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-6" x-data="uploadManager()">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="p-8 border-b border-slate-50 bg-white sticky top-0 z-10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-200">
+                        <i data-lucide="file-up" class="text-white w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Unggah File</h1>
+                        <p class="text-sm text-slate-500 mt-0.5">
+                            {% if target_folder %}
+                                Mengunggah ke: <span class="font-bold text-blue-600">{{ target_folder.name }}</span>
+                            {% else %}
+                                Mengunggah ke: <span class="font-bold text-slate-700">Utama (Root)</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'storage:dashboard' %}" class="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Form / Upload Area -->
+        <div class="p-8">
+            <!-- Dropzone -->
+            <div 
+                x-show="!isUploading && !isFinished"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleDrop($event)"
+                :class="isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'"
+                class="relative border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer group"
+                @click="$refs.fileInput.click()"
+            >
+                <input type="file" x-ref="fileInput" @change="handleFileSelect($event)" class="hidden">
+                
+                <div class="flex flex-col items-center gap-4">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors">
+                        <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold text-slate-900">Tarik & Lepas file di sini</p>
+                        <p class="text-sm text-slate-500 mt-1">atau <span class="text-blue-600 font-bold">pilih dari komputer</span></p>
+                    </div>
+                    <p class="text-xs text-slate-400">Maksimal ukuran file sesuai kuota Anda. Enkripsi otomatis aktif.</p>
+                </div>
+            </div>
+
+            <!-- Upload Progress -->
+            <div x-show="isUploading" x-cloak class="py-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 animate-pulse">
+                        <i data-lucide="file" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-end mb-2">
+                            <p class="font-bold text-slate-900 truncate max-w-[200px]" x-text="fileName"></p>
+                            <p class="text-xs font-bold text-blue-600" x-text="progress + '%'"></p>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full transition-all duration-300" :style="'width: ' + progress + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-sm text-slate-500 flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span>
+                    Sedang mengenkripsi dan mengunggah...
+                </p>
+            </div>
+
+            <!-- Success State -->
+            <div x-show="isFinished && !error" x-cloak class="text-center py-8">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Unggah Berhasil!</h2>
+                <p class="text-slate-500 mb-8" x-text="'File ' + fileName + ' telah aman tersimpan.'"></p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'storage:dashboard' %}" class="btn-primary text-white px-8 py-3 rounded-xl font-bold">
+                        Ke Dashboard
+                    </a>
+                    <button @click="resetUpload()" class="bg-slate-100 text-slate-700 px-8 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+                        Unggah Lagi
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div x-show="error" x-cloak class="text-center py-8">
+                <div class="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Gagal Mengunggah</h2>
+                <p class="text-red-600 mb-8 font-medium" x-text="error"></p>
+                
+                <button @click="resetUpload()" class="btn-primary text-white px-8 py-3 rounded-xl font-bold">
+                    Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function uploadManager() {
+    return {
+        isDragging: false,
+        isUploading: false,
+        isFinished: false,
+        progress: 0,
+        fileName: '',
+        error: null,
+        folderId: '{{ target_folder.id|default:"" }}',
+
+        handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) this.startUpload(file);
+        },
+
+        handleDrop(e) {
+            this.isDragging = false;
+            const file = e.dataTransfer.files[0];
+            if (file) this.startUpload(file);
+        },
+
+        startUpload(file) {
+            this.fileName = file.name;
+            this.isUploading = true;
+            this.error = null;
+            this.progress = 0;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder_id', this.folderId);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            formData.append('is_ajax', 'true');
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '{% url "storage:upload_file" %}', true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            // Track Progress
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    this.progress = Math.round((e.loaded / e.total) * 100);
+                }
+            };
+
+            xhr.onload = () => {
+                this.isUploading = false;
+                this.isFinished = true;
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    responseData = { error: 'Server mengalami masalah teknis (Error 500).' };
+                }
+
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    console.log('Success:', responseData);
+                    this.error = null;
+                } else {
+                    this.error = responseData.error || 'Terjadi kesalahan sistem.';
+                }
+            };
+
+            xhr.onerror = () => {
+                this.isUploading = false;
+                this.isFinished = true;
+                this.error = 'Koneksi terputus atau server tidak merespon.';
+            };
+
+            xhr.send(formData);
+        },
+
+        resetUpload() {
+            this.isUploading = false;
+            this.isFinished = false;
+            this.progress = 0;
+            this.fileName = '';
+            this.error = null;
+        }
+    }
+}
+</script>
+{% endblock %}

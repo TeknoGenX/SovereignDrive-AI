@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Masuk ke Awan - Enterprise Storage{% endblock %}
+
+{% block content %}
+<!-- Sembunyikan Header/Footer Global untuk Fokus Login -->
+{% with hide_nav=True hide_footer=True %}
+
+<div class="min-h-screen flex bg-slate-50">
+    
+    <!-- Kolom Kiri: Ilustrasi & Branding (Tersembunyi di Mobile) -->
+    <div class="hidden lg:flex w-1/2 bg-blue-600 relative items-center justify-center p-12 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+            </svg>
+        </div>
+        
+        <div class="relative z-10 text-white max-w-md">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                    <i data-lucide="cloud" class="w-8 h-8 text-white"></i>
+                </div>
+                <span class="text-3xl font-bold tracking-tight">Awan.</span>
+            </div>
+            
+            <h1 class="text-4xl font-extrabold mb-6 leading-tight">
+                Keamanan Data Anda Adalah <span class="text-blue-200">Prioritas Utama Kami.</span>
+            </h1>
+            
+            <p class="text-lg text-blue-100 mb-10 leading-relaxed opacity-90">
+                Kini dengan enkripsi AES-GCM 256-bit standar militer untuk melindungi setiap bit data berharga Anda.
+            </p>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-4 bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">Enterprise Security</p>
+                        <p class="text-xs text-blue-200">Perlindungan data end-to-end.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kolom Kanan: Formulir Login -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
+        <div class="w-full max-w-md">
+            
+            <!-- Logo Mobile Only -->
+            <div class="flex items-center gap-2 mb-10 lg:hidden justify-center">
+                <div class="bg-blue-600 p-1.5 rounded-lg">
+                    <i data-lucide="cloud" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="text-2xl font-bold tracking-tight text-slate-900">Awan.</span>
+            </div>
+
+            <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">Selamat Datang Kembali</h2>
+                    <p class="text-slate-500 text-sm">Silakan masukkan akun Anda untuk melanjutkan.</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex gap-3">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+                    <p class="text-xs text-red-700 font-medium">Username atau password salah. Silakan coba lagi.</p>
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="id_username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Username</label>
+                        <div class="relative group">
+                            <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            <input type="text" name="username" id="id_username" required
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                placeholder="Masukkan username">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="id_password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                            <a href="#" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Lupa password?</a>
+                        </div>
+                        <div class="relative group">
+                            <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            <input type="password" name="password" id="id_password" required
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember_me" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                        <label for="remember_me" class="ml-2 text-sm text-slate-600">Ingat perangkat ini</label>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                        Masuk Sekarang <i data-lucide="log-in" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+
+                <div class="mt-8 pt-8 border-t border-slate-100 text-center">
+                    <p class="text-sm text-slate-600">
+                        Belum punya akun? <a href="#" class="font-bold text-blue-600 hover:text-blue-700">Daftar gratis</a>
+                    </p>
+                </div>
+            </div>
+            
+            <p class="mt-10 text-center text-xs text-slate-400">
+                &copy; 2024 Awan Storage. All rights reserved. <br>
+                Sistem ini dilindungi oleh enkripsi AES-GCM 256-bit.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endwith %}
+{% endblock %}

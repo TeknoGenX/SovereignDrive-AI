@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tong Sampah - Awan{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full overflow-hidden" x-data="{ sidebarOpen: true, folderModalOpen: false }">
+    
+    {% include 'storage/sidebar.html' %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col bg-white overflow-hidden relative">
+        <!-- Trash Header -->
+        <div class="h-16 border-b flex items-center justify-between px-8 bg-white/80 backdrop-blur-md z-40">
+            <div class="flex items-center gap-6 flex-grow max-w-2xl">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-50 p-2 rounded-xl text-red-600">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </div>
+                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Tong Sampah</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <p class="text-xs text-slate-400 font-medium italic hidden md:block">Item di sini akan dihapus permanen dalam 30 hari</p>
+                <button class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                    <i data-lucide="eraser" class="w-3.5 h-3.5"></i> Kosongkan
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-grow overflow-y-auto p-8 bg-slate-50/30">
+            <div class="max-w-6xl mx-auto">
+                
+                <!-- Info Alert -->
+                <div class="mb-8 p-5 bg-amber-50 border border-amber-100 rounded-2xl flex gap-4 items-start shadow-sm shadow-amber-50">
+                    <div class="bg-amber-100 p-2 rounded-lg text-amber-600">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-amber-900 font-bold mb-0.5">Informasi Pemulihan</p>
+                        <p class="text-xs text-amber-700 leading-relaxed">
+                            Jika Anda memulihkan file yang folder induknya sudah dihapus, file tersebut akan otomatis dipindahkan ke <span class="font-extrabold uppercase tracking-widest text-[10px] bg-amber-200 px-1.5 py-0.5 rounded">Utama (Root)</span> agar tetap dapat diakses.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Trash Table -->
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50/50 border-b border-slate-100">
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Nama Item</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Ukuran</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <!-- Folders -->
+                            {% for folder in folders %}
+                            <tr class="group hover:bg-slate-50/50 transition-all">
+                                <td class="px-8 py-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                            <i data-lucide="folder" class="w-6 h-6 fill-slate-500/10"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-900 text-base leading-tight">{{ folder.name }}</p>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Folder Terhapus</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-5 text-slate-400 text-sm italic">Folder</td>
+                                <td class="px-8 py-5 text-right">
+                                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                        <a href="{% url 'storage:restore_folder' folder.id %}" class="p-2.5 hover:bg-emerald-50 text-emerald-600 rounded-xl" title="Pulihkan Folder">
+                                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="{% url 'storage:hard_delete_folder' folder.id %}" class="p-2.5 hover:bg-red-50 text-red-600 rounded-xl" title="Hapus Permanen" onclick="return confirm('Hapus folder ini dan isinya secara permanen?')">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            <!-- Files -->
+                            {% for file in files %}
+                            <tr class="group hover:bg-slate-50/50 transition-all">
+                                <td class="px-8 py-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 overflow-hidden group-hover:ring-4 ring-slate-50 transition-all">
+                                            {% if file.thumbnail %}
+                                                <img src="{{ file.thumbnail.url }}" class="w-full h-full object-cover grayscale opacity-60">
+                                            {% else %}
+                                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-900 text-base leading-tight">{{ file.name }}</p>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 flex items-center gap-1">
+                                                <i data-lucide="folder" class="w-2.5 h-2.5"></i>
+                                                {% if file.folder %}{{ file.folder.name }}{% else %}Utama{% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-5 text-slate-600 font-medium text-sm">{{ file.size|filesizeformat }}</td>
+                                <td class="px-8 py-5 text-right">
+                                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                        <a href="{% url 'storage:restore_file' file.id %}" class="p-2.5 hover:bg-emerald-50 text-emerald-600 rounded-xl" title="Pulihkan">
+                                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="{% url 'storage:hard_delete_file' file.id %}" class="p-2.5 hover:bg-red-50 text-red-600 rounded-xl" title="Hapus Permanen" onclick="return confirm('Hapus file ini secara permanen?')">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="px-8 py-32 text-center">
+                                    <div class="flex flex-col items-center gap-4">
+                                        <div class="bg-slate-50 p-6 rounded-full text-slate-200">
+                                            <i data-lucide="trash-2" class="w-16 h-16"></i>
+                                        </div>
+                                        <p class="text-slate-400 font-bold">Tong sampah kosong.</p>
+                                        <p class="text-xs text-slate-300">File yang Anda hapus akan muncul di sini.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

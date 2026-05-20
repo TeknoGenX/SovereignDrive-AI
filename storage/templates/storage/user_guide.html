@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Panduan Pengguna - SovereignDrive AI{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-4xl">
+    <nav class="flex mb-8 text-sm text-slate-500">
+        <a href="{% url 'storage:help' %}" class="hover:text-blue-600">Bantuan</a>
+        <span class="mx-2">/</span>
+        <span class="text-slate-900 font-bold">Panduan Pengguna</span>
+    </nav>
+
+    <h1 class="text-4xl font-bold mb-8 text-slate-900">Panduan Pengguna SovereignDrive AI</h1>
+    
+    <div class="space-y-12 prose prose-slate max-w-none">
+        <section>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">1. Mengunggah File</h2>
+            <p>Klik tombol "Upload" pada dashboard untuk memilih file dari perangkat Anda. Sistem mendukung berbagai format file termasuk dokumen, gambar, dan PDF.</p>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">2. Manajemen Folder</h2>
+            <p>Gunakan tombol "Folder Baru" untuk mengorganisir data Anda. Anda dapat membuat struktur folder berjenjang (folder di dalam folder) tanpa batasan kedalaman.</p>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">3. Pencarian Cerdas (AI Search)</h2>
+            <p>Sistem secara otomatis mengekstrak teks dari gambar dan PDF hasil scan. Cukup ketikkan kata kunci di kolom pencarian dashboard untuk menemukan dokumen Anda berdasarkan isinya.</p>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">4. Berbagi File & Folder</h2>
+            <p>Anda dapat membagikan file secara publik atau melalui link rahasia. Gunakan fitur "Share" untuk mengatur izin akses atau membuat link yang dapat diunduh orang lain.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

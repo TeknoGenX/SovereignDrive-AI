@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Awan{% endblock %}
+
+{% block content %}
+  <section class="dashboard">
+    <h2>Selamat datang, {{ request.user.username|default:"Pengguna" }}!</h2>
+    <p>Kelola folder dan file Anda dengan mudah.</p>
+    <div class="cards">
+      <article class="card">
+        <h3>Folder</h3>
+        <p>Lihat dan buat folder baru untuk mengelompokkan file.</p>
+        <a href="{% url 'dashboard_folder' folder_id=some_folder_id %}">Buka</a>
+      </article>
+      <article class="card">
+        <h3>Upload</h3>
+        <p>Unggah file terbaru dan bagikan langsung.</p>
+        <a href="{% url 'upload_file' %}">Upload</a>
+      </article>
+      <article class="card">
+        <h3>Trash</h3>
+        <p>Pulihkan file atau hapus permanen.</p>
+        <a href="{% url 'trash_bin' %}">Lihat</a>
+      </article>
+    </div>
+  </section>
+{% endblock %}

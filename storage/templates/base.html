@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SovereignDrive AI - Enterprise Private Cloud{% endblock %}</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Alpine.js (Modal & UI Logic) -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Tailwind CSS (via CDN untuk prototipe cepat namun tetap elegan) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-item {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .sidebar-item:hover {
+            background-color: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .sidebar-item.active {
+            background-color: #eff6ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Tree Viewer Styles */
+        .tree-node {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .file-row:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col">
+
+    {% if not hide_nav %}
+    <!-- Global Header -->
+    <header class="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg">
+                    <i data-lucide="shield" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-slate-900">Sovereign<span class="text-blue-600">Drive AI</span></span>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+                <a href="#features" class="hover:text-blue-600 transition-colors">Produk</a>
+                <a href="#solutions" class="hover:text-blue-600 transition-colors">Solusi</a>
+                <a href="#pricing" class="hover:text-blue-600 transition-colors">Harga</a>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'storage:dashboard' %}" class="btn-primary text-white px-5 py-2 rounded-lg text-sm font-semibold">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-slate-600 text-sm font-medium hover:text-slate-900">Masuk</a>
+                    <a href="#" class="btn-primary text-white px-5 py-2 rounded-lg text-sm font-semibold">Daftar</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if not hide_footer %}
+    <footer class="bg-white border-t py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield" class="text-blue-600 w-5 h-5"></i>
+                    <span class="font-bold text-slate-800">SovereignDrive AI</span>
+                    <span class="text-slate-400 text-sm ml-4">© 2024 SovereignDrive. Enterprise Ready.</span>
+                </div>
+                <div class="flex gap-6 text-sm text-slate-500">
+                    <a href="{% url 'storage:privacy' %}" class="hover:text-slate-800">Privasi</a>
+                    <a href="{% url 'storage:terms' %}" class="hover:text-slate-800">Ketentuan</a>
+                    <a href="{% url 'storage:help' %}" class="hover:text-slate-800">Bantuan</a>
+                    <a href="mailto:sales@teknogenx.com" class="hover:text-blue-600 font-semibold transition-colors">Kontak Sales</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

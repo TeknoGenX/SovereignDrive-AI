@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ folder.name }} - Awan{% endblock %}
+{% block content %}
+<h2>Folder: {{ folder.name }}</h2>
+<p>
+    <a href="{% url 'dashboard' %}">Kembali</a> |
+    <a href="{% url 'folder_create' %}">Tambah</a>
+</p>
+<section class="panel">
+    <h3>Subfolder</h3>
+    <form action="{% url 'create_folder' %}" method="post">
+        {% csrf_token %} {{ form.name }} {{ form.parent }}
+        <button type="submit">Buat Subfolder</button>
+    </form>
+    <ul>
+      {% for sub in subfolders %}
+      <li>
+        <a href="{% url 'dashboard_folder' sub.id %}">{{ sub.name }}</a>
+      </li>
+      {% empty %}
+      <li>kosong</li>
+      {% endfor %}
+    </ul>
+</section>
+<section class="panel">
+    <h3>File di folder</h3>
+    <form action="{% url 'upload_file' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %} {{ upload_form.name }} {{ upload_form.file }} {{ upload_form.folder }}
+        <button type="submit">Upload</button>
+    </form>
+    <ul>
+      {% for f in files %}
+      <li><a href="{% url 'file_detail' f.id %}">{{ f.name }}</a></li>
+      {% empty %}
+      <li>kosong</li>
+      {% endfor %}
+    </ul>
+</section>
+{% endblock %}

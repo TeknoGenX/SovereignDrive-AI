@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Ketentuan Layanan - SovereignDrive AI{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-4xl">
+    <h1 class="text-4xl font-bold mb-8 text-slate-900">Ketentuan Layanan</h1>
+    <div class="prose prose-slate lg:prose-lg max-w-none">
+        <p class="text-slate-600 mb-6">Terakhir diperbarui: {{ today|date:"d F Y" }}</p>
+        
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-800">1. Penerimaan Ketentuan</h2>
+            <p class="text-slate-600">Dengan menggunakan platform SovereignDrive AI, Anda setuju untuk terikat oleh ketentuan layanan ini. Jika Anda menggunakan ini atas nama perusahaan, Anda menyatakan memiliki wewenang untuk menyetujui ketentuan ini.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-800">2. Tanggung Jawab Pengguna</h2>
+            <p class="text-slate-600">Anda bertanggung jawab penuh atas konten yang Anda simpan di SovereignDrive AI. Anda setuju untuk tidak menggunakan layanan ini untuk menyimpan konten ilegal atau melanggar hak kekayaan intelektual orang lain.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-800">3. Batasan Penggunaan</h2>
+            <p class="text-slate-600">Anda tidak diperbolehkan melakukan rekayasa balik (*reverse engineering*), mengganggu stabilitas infrastruktur kami, atau mencoba menembus keamanan sistem di luar protokol resmi.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-800">4. Pembatalan Akun</h2>
+            <p class="text-slate-600">Kami berhak menangguhkan atau menghentikan akses jika ditemukan pelanggaran terhadap ketentuan ini demi menjaga keamanan seluruh pengguna lain.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

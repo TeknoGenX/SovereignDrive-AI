@@ -1,0 +1,32 @@
+ 
+ -------------- celery@andi-liani-ThinkPad-T460 v5.6.3 (recovery)
+--- ***** ----- 
+-- ******* ---- Linux-6.17.0-29-generic-x86_64-with-glibc2.39 2026-05-20 23:17:56
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         core:0x79cd84fad730
+- ** ---------- .> transport:   redis://172.18.0.2:6379/0
+- ** ---------- .> results:     redis://172.18.0.2:6379/0
+- *** --- * --- .> concurrency: 4 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . core.celery.debug_task
+  . django_elasticsearch_dsl.signals.registry_delete_task
+  . django_elasticsearch_dsl.signals.registry_update_related_task
+  . django_elasticsearch_dsl.signals.registry_update_task
+  . storage.tasks.generate_thumbnail_task
+  . storage.tasks.process_file_and_index
+
+[2026-05-20 23:17:57,027: INFO/MainProcess] Connected to redis://172.18.0.2:6379/0
+[2026-05-20 23:17:57,031: INFO/MainProcess] mingle: searching for neighbors
+[2026-05-20 23:17:58,044: INFO/MainProcess] mingle: all alone
+[2026-05-20 23:17:58,056: INFO/MainProcess] celery@andi-liani-ThinkPad-T460 ready.
+
+worker: Hitting Ctrl+C again will initiate cold shutdown, terminating all running tasks!
+
+worker: Warm shutdown (MainProcess)

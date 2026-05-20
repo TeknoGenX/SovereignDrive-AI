@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Pusat Bantuan - SovereignDrive AI{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-4xl">
+    <h1 class="text-4xl font-bold mb-8 text-slate-900">Pusat Bantuan</h1>
+    
+    <div class="grid md:grid-cols-2 gap-8 mb-16">
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+            <div class="bg-blue-100 w-12 h-12 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Panduan Pengguna</h3>
+            <p class="text-slate-600 mb-6">Pelajari cara mengunggah file, mengatur folder, dan menggunakan fitur pencarian AI kami yang cerdas.</p>
+            <a href="{% url 'storage:user_guide' %}" class="text-blue-600 font-bold hover:underline flex items-center gap-2">Baca Panduan <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+            <div class="bg-emerald-100 w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-600 mb-6">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Keamanan & Enkripsi</h3>
+            <p class="text-slate-600 mb-6">Pahami bagaimana data Anda dilindungi dengan enkripsi AES-256 dan bagaimana cara mengaktifkan 2FA.</p>
+            <a href="{% url 'storage:security_docs' %}" class="text-emerald-600 font-bold hover:underline flex items-center gap-2">Lihat Dokumentasi <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+        </div>
+    </div>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold mb-8 text-slate-900">Pertanyaan Umum (FAQ)</h2>
+        <div class="space-y-4">
+            <div class="border border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors">
+                <h3 class="font-bold text-lg mb-2">Bagaimana cara kerja pencarian AI?</h3>
+                <p class="text-slate-600">Sistem kami secara otomatis memindai file gambar dan PDF menggunakan OCR (Optical Character Recognition) sehingga teks di dalamnya dapat dicari melalui kolom pencarian.</p>
+            </div>
+            <div class="border border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors">
+                <h3 class="font-bold text-lg mb-2">Apakah data saya aman di SovereignDrive AI?</h3>
+                <p class="text-slate-600">Ya, karena ini adalah Private Cloud, data Anda tetap berada di bawah kendali infrastruktur yang Anda pilih, bukan di cloud publik yang terpusat.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="bg-blue-600 rounded-3xl p-12 text-center text-white">
+        <h2 class="text-3xl font-bold mb-4">Masih butuh bantuan?</h2>
+        <p class="text-blue-100 mb-8 max-w-lg mx-auto">Tim dukungan kami siap membantu Anda 24/7. Hubungi kami melalui email atau tiket bantuan.</p>
+        <a href="mailto:support@teknogenx.com" class="bg-white text-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors inline-block">Hubungi Support</a>
+    </div>
+</div>
+{% endblock %}
