@@ -11,6 +11,7 @@
 - **Catatan Penulis & Strategi** (`AUTHOR_NOTES.md`)
 
 ### **BAGIAN I: Pondasi & Filosofi (The Awakening)**
+- **Bab 0: Dunia Open Source dan Keajaiban Ubuntu** (`00-filosofi-open-source.md`)
 - **Bab 1: Pondasi & Filosofi: Mengapa Harus Cloud Berdaulat?** (`01-pondasi-dan-persiapan.md`)
 - **Bab 2: Arsitektur Database & Hirarki Folder** (`02-database-dan-hirarki.md`)
 
