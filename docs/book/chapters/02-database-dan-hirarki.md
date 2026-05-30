@@ -103,7 +103,35 @@ Kita tidak pernah benar-benar menghapus data saat user menekan tombol "Hapus". K
 
 ---
 
-## 2.6. Common Pitfalls (Lubang Jebakan)
+## 2.6. Arsitektur Unggahan Skala Besar (Chunked Upload)
+
+Bagaimana jika pengguna ingin mengunggah file video berukuran 10GB dengan koneksi internet yang tidak stabil? Mengunggah dalam satu permintaan HTTP tunggal adalah resep bencana. Jika koneksi terputus di 99%, pengguna harus mengulang dari nol.
+
+SovereignDrive memecahkannya dengan model **`FileChunk`**.
+
+### 2.6.1. Mekanisme Pemecahan File
+File besar dipecah menjadi potongan kecil (misal: per 2MB) di sisi klien. Setiap potongan dikirim secara terpisah ke server.
+- **`upload_id`**: Token UUID unik yang mengikat seluruh potongan file yang sama.
+- **`total_chunks` vs `received_chunks`**: Server melacak progres unduhan. Hanya jika semua potongan sudah diterima, proses penggabungan (Assembly) dimulai.
+
+### 2.6.2. Penyimpanan Sementara Potongan
+Server menyimpan potongan file di direktori khusus (`/media/chunks/<upload_id>/`) sebelum digabungkan. Hal ini mencegah penggunaan memori RAM yang berlebihan karena potongan file langsung ditulis ke disk.
+
+```python
+class FileChunk(models.Model):
+    upload_id = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+    total_chunks = models.IntegerField()
+    received_chunks = models.IntegerField(default=0)
+    
+    def get_chunk_path(self, chunk_index):
+        directory = os.path.join(settings.MEDIA_ROOT, 'chunks', str(self.upload_id))
+        os.makedirs(directory, exist_ok=True)
+        return os.path.join(directory, f'part_{chunk_index}')
+```
+
+---
+
+## 2.7. Common Pitfalls (Lubang Jebakan)
 
 1.  **Circular References:** Apa yang terjadi jika Folder A adalah orang tua Folder B, dan Anda mencoba menjadikan Folder B sebagai orang tua Folder A? Anda menciptakan *Infinite Loop*. 
     *   **Solusi:** Selalu validasi hirarki di level Model `clean()` atau gunakan database trigger.

@@ -83,28 +83,27 @@ Kita menggunakan **Flower**, sebuah dashboard web untuk memantau Celery secara *
 
 ---
 
-## 6.5. Bedah Kode: Complex Task Architecture
+## 6.5. Tugas Pemeliharaan Otomatis (Maintenance Tasks)
 
-Berikut adalah contoh tugas pembersihan otomatis yang dijalankan secara periodik (Celery Beat):
+Sistem produksi memerlukan rutinitas pembersihan agar tidak "berlumut". Berikut adalah tugas-tugas yang dijalankan secara periodik via **Celery Beat**:
+
+### 6.5.1. Audit Kuota: Mencegah Data Drift
+Terkadang, karena server mati mendadak atau bug pada signal, nilai `storage_used` di database bisa berbeda dengan ukuran file asli. Kita menjalankan audit periodik untuk mencocokkan kembali data.
 
 ```python
 @shared_task
-def cleanup_temporary_files():
-    """Membersihkan file ZIP sisa download yang lebih tua dari 24 jam."""
-    threshold = now() - timedelta(hours=24)
-    old_files = TempExport.objects.filter(created_at__lt=threshold)
-    
-    for item in old_files:
-        if os.path.exists(item.path):
-            os.remove(item.path)
-        item.delete()
-    
-    return f"Berhasil membersihkan {old_files.count()} file."
+def sync_all_users_quota_task():
+    users = User.objects.all()
+    for user in users:
+        actual_usage = File.objects.filter(owner=user, is_trashed=False).aggregate(total=Sum('size'))['total'] or 0
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        if profile.storage_used != actual_usage:
+            profile.storage_used = actual_usage
+            profile.save()
 ```
 
-**Analisis Teknikal:**
-- **Celery Beat**: Komponen ini bertindak sebagai "Jam Dinding" yang memicu tugas secara otomatis setiap jam atau setiap hari (seperti *Cron Job*).
-- **Batch Processing**: Kita memproses file dalam kumpulan untuk menjaga efisiensi I/O disk.
+### 6.5.2. Garbage Collection (Cleanup)
+Membersihkan file ZIP sisa download atau potongan file (*chunks*) yang tidak selesai diunggah.
 
 ---
 

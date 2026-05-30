@@ -57,7 +57,7 @@ Memproses file besar (misal: video 4K berukuran 5GB) di server dengan RAM terbat
 Kita menggunakan fitur **Generator** di Python (`yield`) untuk membuat "pipa" data. Data mengalir dari input, dienkripsi 64KB demi 64KB, dan langsung dikirim ke penyimpanan.
 
 ### 3.3.2. Bedah Struktur Byte di Disk (.enc)
-Format file SovereignDrive di penyimpanan tidak sembarangan. Ia memiliki struktur header khusus:
+Format file SovereignDrive di penyimpanan tidak sembarangan. Ia memiliki struktur header khusus yang memungkinkan sistem melakukan verifikasi instan:
 
 | Offset | Ukuran | Nama | Deskripsi |
 | :--- | :--- | :--- | :--- |
@@ -65,7 +65,8 @@ Format file SovereignDrive di penyimpanan tidak sembarangan. Ia memiliki struktu
 | 12 | 4 Byte | **Chunk Length** | Panjang data terenkripsi (Little-Endian). |
 | 16 | 12 Byte | **Nonce** | Angka acak unik untuk chunk ini. |
 | 28 | Variabel | **Ciphertext** | Data asli yang sudah terenkripsi + 16 byte Auth Tag. |
-| ... | ... | ... | (Berulang untuk setiap chunk selanjutnya) |
+
+*Engineering Detail:* Kita menggunakan **Little-Endian** (`<I` pada `struct.pack`) agar metadata file tetap konsisten saat dipindahkan antar arsitektur CPU (seperti dari server Intel ke laptop ARM MacBook M1).
 
 ---
 

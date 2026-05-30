@@ -37,6 +37,8 @@ urlpatterns = [
     path('trash/', views.trash_bin, name='trash_bin'),
     path('file/<uuid:file_id>/restore/', views.restore_file, name='restore_file'),
     path('file/<uuid:file_id>/hard-delete/', views.hard_delete_file, name='hard_delete_file'),
+    path('folder/<uuid:folder_id>/restore/', views.restore_folder, name='restore_folder'),
+    path('folder/<uuid:folder_id>/hard-delete/', views.hard_delete_folder, name='hard_delete_folder'),
 
     # --- FITUR PUBLIK ---
     path('file/<uuid:file_id>/toggle-public/', views.toggle_public, name='toggle_public'),

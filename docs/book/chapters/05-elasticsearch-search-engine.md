@@ -88,26 +88,18 @@ class FileDocument(Document):
 ### 5.3.1. Query DSL: Search Relevance Engineering
 Pencarian yang baik bukan hanya soal menemukan data, tapi menampilkan yang paling relevan di urutan teratas.
 
-```python
-search = FileDocument.search().query(
-    "bool",
-    should=[
-        # Nama file 3x lebih penting daripada isi teks (Boosting)
-        ES_Q("multi_match", query=q, fields=['name^3'], fuzziness="AUTO"),
-        ES_Q("multi_match", query=q, fields=['extracted_text'], fuzziness="AUTO"),
-    ],
-    minimum_should_match=1
-).filter(
-    "term", owner_id=user.id # Security: Jangan tampilkan file orang lain
-).filter(
-    "term", is_trashed=False # Jangan tampilkan file di tempat sampah
-)
-```
+#### 5.3.2. Menjaga Urutan Relevansi di Django
+Salah satu tantangan besar adalah saat kita mendapatkan ID file dari Elasticsearch (yang sudah terurut berdasarkan skor), namun saat melakukan query `File.objects.filter(id__in=ids)`, Django akan mengurutkannya kembali berdasarkan ID atau tanggal (kehilangan urutan relevansi ES).
 
-**Analisis Teknikal:**
-- **`bool` query**: Menggabungkan beberapa kriteria (Should = Opsional tapi menambah skor, Filter = Wajib dan tidak menambah skor).
-- **`fuzziness="AUTO"`**: Menggunakan algoritma *Levenshtein Distance*. Jika user mengetik "Lapotp", sistem tetap menemukan "Laptop".
-- **Boosting (`^3`)**: Teknik psikologis agar user merasa sistem "pintar" karena hasil yang nama filenya mirip muncul paling atas.
+SovereignDrive memecahkannya dengan teknik **`Case/When`** di PostgreSQL:
+
+```python
+from django.db.models import Case, When
+# ids = [uuid_paling_relevan, uuid_kedua, ...]
+preserved_order = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(ids)])
+files = File.objects.filter(id__in=ids).order_by(preserved_order)
+```
+Dengan teknik ini, urutan "kecerdasan" dari Elasticsearch tetap terjaga hingga sampai ke tangan pengguna.
 
 ---
 

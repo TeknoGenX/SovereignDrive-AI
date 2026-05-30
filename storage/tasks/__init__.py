@@ -298,19 +298,10 @@ def process_telegram_upload_task(chat_id, file_id, file_name, file_size):
             tmp_tele_path = tmp_tele.name
 
         try:
+            from django.core.files import File as DjangoFile
             with open(tmp_tele_path, 'rb') as f:
-                uploaded_file = SimpleUploadedFile(file_name, f.read()) # Masih dibaca ke RAM oleh SimpleUploadedFile, tapi minimal downloadnya stream.
-                # Sebenarnya upload_service butuh objek file. Kita bisa beri f langsung.
-                f.seek(0)
-                # Bungkus agar punya atribut .size dan .name yang diharapkan upload_service
-                from django.core.files.uploadedfile import InMemoryUploadedFile
-                # Namun SimpleUploadedFile sudah cukup jika file_content ada.
-                # Agar benar-benar stream ke upload_service, kita perlu refactor service-nya.
-                # Untuk sekarang, gunakan ContentFile atau SimpleUploadedFile dengan f.read()
-                # Tapi f.read() tetap memakan RAM. Mari gunakan Django's File wrapper.
-                from django.core.files import File as DjangoFile
                 django_file = DjangoFile(f, name=file_name)
-                # upload_service butuh .size
+                # upload_service needs .size
                 django_file.size = os.path.getsize(tmp_tele_path)
                 
                 new_file = service_upload_file(user, django_file)

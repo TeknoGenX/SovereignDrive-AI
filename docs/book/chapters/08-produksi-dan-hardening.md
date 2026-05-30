@@ -42,36 +42,36 @@ Jangan biarkan Gunicorn terekspos langsung ke internet. Gunakan **Nginx** sebaga
 
 ---
 
-## 8.3. Efisiensi Skala Besar: Pencegahan Kebocoran Disk
+### 8.3. Efisiensi Skala Besar: Pencegahan Kebocoran Disk
 
-Fitur "Download as ZIP" memproses banyak file sementara (`tempfile`) di sistem. Jika terjadi error di tengah jalan, file sisa ini akan menumpuk di folder `/tmp` Linux hingga server mati.
+Fitur "Download as ZIP" atau watermarking PDF besar memproses banyak file sementara (`tempfile`) di sistem. Jika terjadi error di tengah jalan, file sisa ini akan menumpuk di folder `/tmp` Linux hingga server mati.
 
-### 8.3.1. Bedah Kode: `CleanupFileResponse`
-SovereignDrive menggunakan teknik kustom untuk menjamin pembersihan file:
+#### 8.3.1. Pola Desain: `CleanupFileResponse`
+SovereignDrive menggunakan teknik kustom untuk menjamin pembersihan file. Kita membungkus `FileResponse` bawaan Django dan melakukan *override* pada metode `.close()` yang dipanggil oleh server WSGI setelah streaming selesai:
 
 ```python
-from django.http import FileResponse
-import os
-
 class CleanupFileResponse(FileResponse):
-    """
-    Wrapper FileResponse yang otomatis menghapus file di disk 
-    setelah streaming selesai dikirim ke browser.
-    """
     def __init__(self, *args, **kwargs):
-        self._file_to_cleanup = kwargs.pop('file_to_cleanup', None)
+        self._cleanup_paths = kwargs.pop('cleanup_paths', [])
         super().__init__(*args, **kwargs)
 
     def close(self):
         super().close()
-        if self._file_to_cleanup and os.path.exists(self._file_to_cleanup):
-            os.remove(self._file_to_cleanup)
+        for path in self._cleanup_paths:
+            if os.path.exists(path):
+                os.remove(path)
 ```
-Dengan kelas ini, kita memberikan garansi bahwa disk server tetap bersih meskipun koneksi internet user terputus saat mengunduh.
+*Engineering Insight:* Dengan pola ini, kita tidak perlu khawatir tentang file sampah. Baik unduhan selesai dengan sukses atau koneksi internet user terputus di tengah jalan, file sementara di disk server dijamin akan terhapus.
+
+#### 8.3.2. Akselerasi Pengiriman: X-Accel-Redirect (Nginx)
+Mengirimkan file besar langsung melalui Python sangat tidak efisien (menghabiskan worker Gunicorn). SovereignDrive menggunakan fitur **X-Accel-Redirect**. 
+- **Alur Kerja**: Django hanya melakukan pengecekan izin (ACL). Jika diizinkan, Django mengirim header khusus ke Nginx.
+- **Eksekusi**: Nginx (yang sangat cepat dalam I/O) akan mengambil alih pengiriman file ke user, sementara worker Django segera bebas untuk melayani permintaan lain.
 
 ---
 
 ## 8.4. Audit & Integritas Data Jangka Panjang
+
 
 ### 8.4.1. Audit Logging Asinkron
 Sistem level korporat harus mencatat setiap klik dan unduh. Kita menggunakan Celery untuk mencatat log ini agar tidak memperlambat responsivitas UI bagi pengguna.

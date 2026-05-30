@@ -70,7 +70,13 @@ def test_idor_prevention(api_client, user_a, user_b, file_of_user_b):
 
 Selain pengujian logika, kita menggunakan alat pemindai kode otomatis:
 1.  **Bandit**: Mencari celah keamanan umum di Python (seperti penggunaan `os.system` yang berbahaya atau hardcoded password).
-2.  **Safety**: Mengecek apakah library yang kita gunakan (seperti Django atau Celery) memiliki kerentanan keamanan yang sudah dilaporkan (CVE).
+2.  **Audit Log Tracking**: Kita memverifikasi bahwa setiap aksi krusial (seperti `download` atau `delete`) benar-benar tercatat di tabel `AuditLog`.
+
+```python
+def test_audit_log_creation_on_download(api_client, my_file):
+    api_client.get(f"/api/v1/files/{my_file.id}/download/")
+    assert AuditLog.objects.filter(action='download', target_id=my_file.id).exists()
+```
 
 ---
 

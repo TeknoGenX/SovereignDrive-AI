@@ -57,14 +57,42 @@ Python dipilih bukan hanya karena Django, tetapi karena efisiensi memori dan duk
 
 Kita akan membangun laboratorium yang *reproducible* (dapat direplikasi). Artinya, setup di laptop Anda harus identik dengan setup di server produksi.
 
-### 1.3.1. Modern Tooling: Migrasi ke `uv`
+### 1.3.1. Keamanan Akses: Sovereign License Gatekeeper
+Sebelum memulai, SovereignDrive AI menerapkan sistem **License Gatekeeper**. Ini adalah mekanisme perlindungan intelektual yang memastikan aplikasi hanya berjalan jika memiliki kunci lisensi yang sah. 
+
+Dalam `core/settings.py`, kita mengimplementasikan pengecekan saat startup:
+```python
+SOVEREIGN_LICENSE_KEY = config('SOVEREIGN_LICENSE_KEY', default='')
+if not SOVEREIGN_LICENSE_KEY:
+    import sys
+    print("ERROR: SOVEREIGN_LICENSE_KEY TIDAK DITEMUKAN!")
+    sys.exit(1)
+```
+*Engineering Note:* Menggunakan `sys.exit(1)` saat startup adalah praktik "Fail Fast"—mencegah aplikasi berjalan dalam kondisi yang tidak terdefinisi atau tidak sah.
+
+### 1.3.2. Modern Tooling: Migrasi ke `uv`
 Meskipun `pip` adalah standar, di buku ini kita akan mengenal **`uv`**. Ini adalah paket manajer Python yang ditulis dalam Rust, yang **10x lebih cepat** daripada pip dan pip-tools. 
 
 **Instalasi `uv`:**
 - **Linux/macOS:** `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Windows:** `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-### 1.3.2. Docker: Kontainerisasi Layanan Pendukung
+### 1.3.3. Automasi Jaringan: Get Docker IP
+Salah satu masalah klasik di Docker adalah perubahan IP container. SovereignDrive memecahkannya dengan fungsi pembantu `get_docker_ip()` yang melakukan inspeksi ke socket Docker secara otomatis untuk menemukan host database dan cache:
+
+```python
+def get_docker_ip(container_name, default='127.0.0.1'):
+    try:
+        result = subprocess.run(
+            ['docker', 'inspect', '-f', '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}', container_name],
+            capture_output=True, text=True, check=True, timeout=2
+        )
+        return result.stdout.strip() or default
+    except Exception:
+        return default
+```
+
+### 1.3.4. Docker: Kontainerisasi Layanan Pendukung
 Kita tidak akan menginstal PostgreSQL atau Elasticsearch langsung di OS. Kita akan menggunakan Docker untuk membungkusnya.
 
 **File `docker-compose.yml` Dasar:**
@@ -86,7 +114,17 @@ services:
 
 ---
 
-## 1.4. The Sovereign Manifesto (10 Prinsip Utama)
+## 1.4. Identitas & Autentikasi Modern (SSO)
+
+Di era modern, memaksa pengguna menghafal password baru adalah sebuah hambatan. SovereignDrive mendukung **SSO (Single Sign-On)** menggunakan protokol OAuth2 melalui library `social-auth-app-django`.
+
+### 1.4.1. Integrasi Google & Microsoft Azure
+Sistem telah dikonfigurasi untuk menerima identitas dari penyedia raksasa. Hal ini penting untuk tingkat perusahaan (*Enterprise Readiness*).
+- **Social Auth Pipeline**: Proses otomatis yang memetakan data dari Google/Azure (Email, Nama, Foto) langsung ke model User Django tanpa campur tangan manual.
+
+---
+
+## 1.5. The Sovereign Manifesto (12 Prinsip Utama)
 
 Sebelum menulis baris kode pertama, kita harus menyepakati prinsip-prinsip ini agar sistem tetap aman:
 1. **Zero Access by Default**: Tidak ada data yang bisa diakses tanpa token yang sah.
@@ -99,6 +137,8 @@ Sebelum menulis baris kode pertama, kita harus menyepakati prinsip-prinsip ini a
 8. **Fail Securely**: Jika sistem error, ia harus menutup akses, bukan membukanya.
 9. **No Hardcoding**: Semua konfigurasi sensitif ada di `.env`.
 10. **Test the Fortress**: Sistem tanpa automated test adalah sistem yang rapuh.
+11. **License Integrity**: Selalu gunakan kunci lisensi yang valid.
+12. **SSO First**: Utamakan login terpusat untuk keamanan audit yang lebih baik.
 
 ---
 

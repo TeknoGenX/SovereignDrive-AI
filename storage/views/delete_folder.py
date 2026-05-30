@@ -4,20 +4,22 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
 
-from storage.models import Folder, File, FolderAccess
+from storage.models import Folder, File, FolderAccess, UserProfile
 from storage.selectors.profile_selector import get_user_storage_stats
 
 from django.db.models import Sum, F
 
 def get_all_descendant_folder_ids(folder_obj):
     """
-    Mencari semua ID subfolder secara rekursif.
+    Mencari semua ID subfolder secara iteratif (BFS) untuk efisiensi
+    dan mencegah recursion limit.
     """
     descendants = [folder_obj.id]
-    subfolders = Folder.objects.filter(parent=folder_obj).values_list('id', flat=True)
-    for sub_id in subfolders:
-        sub_obj = Folder.objects.get(id=sub_id)
-        descendants.extend(get_all_descendant_folder_ids(sub_obj))
+    current_level = [folder_obj.id]
+    while current_level:
+        next_level = list(Folder.objects.filter(parent_id__in=current_level).values_list('id', flat=True))
+        descendants.extend(next_level)
+        current_level = next_level
     return descendants
 
 def mark_folder_as_trashed_bulk(folder_obj, user):

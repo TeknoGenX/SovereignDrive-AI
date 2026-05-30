@@ -56,38 +56,34 @@ Di SovereignDrive, kita mengintegrasikan NLTK dengan dukungan bahasa Indonesia u
 Tugas AI adalah tugas yang sangat haus *resource* (CPU dan RAM). Jika dilakukan langsung di server web, aplikasi akan membeku. Kita menggunakan **Celery** untuk mengelola tugas-tugas ini secara asinkron.
 
 ### 4.3.1. Implementasi RAM-Friendly Indexing
-Perhatikan strategi kita dalam menangani file besar di `storage/tasks/__init__.py`:
+Perhatikan strategi kita dalam menangani file besar di `storage/tasks/__init__.py`. Kita tidak memuat seluruh file ke memori, melainkan melakukan *streaming decryption* langsung ke file sementara di disk:
 
 ```python
 @shared_task(bind=True, max_retries=3)
 def process_file_and_index(self, file_id):
-    # [1] Gunakan Disk Buffering untuk Enkripsi
+    # TAHAP 0: DEKRIPSI KE TEMPORARY FILE (RAM-Friendly)
+    # NamedTemporaryFile memungkinkan library lain (fitz/PIL) membaca langsung dari disk
     with tempfile.NamedTemporaryFile(delete=True) as tmp_file:
-        file_obj = File.objects.get(id=file_id)
+        file_obj.file.seek(0)
         for chunk in decrypt_stream(file_obj.file):
             tmp_file.write(chunk)
-        tmp_file.flush()
+        tmp_file.flush() # Pastikan semua data tertulis ke disk
         
-        # [2] Deteksi Tipe & Hybrid Engine
+        # TAHAP 1: EKSTRAKSI BERDASARKAN TIPE
         if ext.endswith('.pdf'):
-            # Gunakan fitz (PyMuPDF) karena 10x lebih cepat dari OCR
+            # Buka PDF dari path file sementara (Hemat RAM!)
             with fitz.open(tmp_file.name) as doc:
                 text = "".join([p.get_text() for p in doc])
         else:
-            # Gunakan Tesseract untuk gambar
+            # Buka Gambar dari path file sementara
             with Image.open(tmp_file.name) as img:
-                text = pytesseract.image_to_string(img, lang='ind+eng')
-
-    # [3] NLP Offloading
-    clean_text = nlp_processor.full_clean(text)
-    file_obj.extracted_text = clean_text
-    file_obj.save()
+                text = pytesseract.image_to_string(img)
 ```
 
 ### **Analisis Engineering Tingkat Lanjut:**
-1.  **NamedTemporaryFile**: Kita tidak mendekripsi file langsung ke RAM. Dengan menulis ke disk sementara, kita bisa memproses file 100MB di server yang hanya memiliki sisa RAM 50MB.
-2.  **fitz (PyMuPDF)**: Mengapa bukan PyPDF2? Karena `fitz` ditulis dalam C dan mampu mengekstrak teks dari ribuan halaman PDF digital dalam hitungan detik, jauh lebih cepat daripada melakukan OCR pada setiap halaman.
-3.  **Language Strategy (`ind+eng`)**: Kita mengaktifkan multi-bahasa pada Tesseract agar sistem bisa mengenali istilah teknis bahasa Inggris di dalam dokumen bahasa Indonesia tanpa kebingungan.
+1.  **Disk Buffering**: Dengan menulis ke disk sementara (`tmp_file.name`), kita bisa memproses file 100MB di server yang hanya memiliki sisa RAM 50MB.
+2.  **Context Manager (`with`)**: Penggunaan `with` menjamin `tmp_file` akan dihapus dari disk segera setelah blok kode selesai, meskipun terjadi error di tengah proses.
+3.  **Hybrid Engine**: Menggunakan `fitz` (PyMuPDF) karena ia mampu mengekstrak teks dari ribuan halaman PDF digital dalam hitungan detik tanpa membebani CPU seperti OCR.
 
 ---
 

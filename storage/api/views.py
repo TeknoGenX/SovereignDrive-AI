@@ -105,8 +105,8 @@ class FileViewSet(viewsets.ModelViewSet):
         es_query = FileDocument.search().query(
             "bool",
             should=[
-                ES_Q("multi_match", query=query, fields=['name^3', 'name.suggest'], fuzziness="AUTO"),
-                ES_Q("multi_match", query=query, fields=['extracted_text', 'extracted_text.suggest'], fuzziness="AUTO"),
+                ES_Q("multi_match", query=query, fields=['name^3'], fuzziness="AUTO"),
+                ES_Q("multi_match", query=query, fields=['extracted_text'], fuzziness="AUTO"),
             ],
             minimum_should_match=1
         ).filter(
@@ -117,6 +117,9 @@ class FileViewSet(viewsets.ModelViewSet):
         
         results = es_query.execute()
         found_ids = [hit.meta.id for hit in results]
+        
+        if not found_ids:
+            return Response([])
         
         # Optimasi: Menjamin urutan file sesuai dengan skor relevansi Elasticsearch
         from django.db.models import Case, When
@@ -236,8 +239,11 @@ class FileViewSet(viewsets.ModelViewSet):
                         final_file.write(part.read())
                     os.remove(chunk_path)
 
+            from django.core.files import File as DjangoFile
             with open(final_temp_path, 'rb') as f:
-                django_file = ContentFile(f.read(), name=file_chunk.filename)
+                django_file = DjangoFile(f, name=file_chunk.filename)
+                # upload_service needs .size
+                django_file.size = os.path.getsize(final_temp_path)
                 new_file = service_upload_file(request.user, django_file, file_chunk.folder)
             
             # ENTERPRISE: Buat Approval Request otomatis

@@ -1,4 +1,4 @@
-# Glosarium Istilah Teknik: SovereignDrive AI
+# Glosarium Istilah Teknik: SovereignDrive AI (Edisi Lengkap)
 
 Glosarium ini disusun untuk membantu Anda memahami istilah-istilah teknis kelas atas yang digunakan di sepanjang buku ini. Istilah-istilah ini mencakup domain Kriptografi, Kecerdasan Buatan, Infrastruktur, dan Software Engineering.
 
@@ -7,83 +7,86 @@ Glosarium ini disusun untuk membantu Anda memahami istilah-istilah teknis kelas 
 ## 🔐 Kriptografi & Keamanan
 
 ### **AES-256 GCM (Galois/Counter Mode)**
-Standar enkripsi simetris yang menyediakan kerahasiaan sekaligus integritas data. Tidak seperti mode CBC, GCM adalah *Authenticated Encryption* yang dapat mendeteksi jika data telah dimodifikasi oleh pihak ketiga melalui *Authentication Tag*.
-
-### **Authenticated Encryption with Associated Data (AEAD)**
-Bentuk enkripsi yang menjamin kerahasiaan (data tidak bisa dibaca) dan autentikasi (data berasal dari sumber yang benar dan belum diubah).
+Standar enkripsi simetris yang menyediakan kerahasiaan sekaligus integritas data. Tidak seperti mode CBC, GCM adalah *Authenticated Encryption* yang dapat mendeteksi jika data telah dimodifikasi melalui *Authentication Tag*.
 
 ### **Bcrypt**
-Fungsi hashing kata sandi berbasis algoritma *Blowfish*. Bcrypt dirancang untuk menjadi lambat secara komputasi (memiliki *work factor*) guna memperlambat serangan *Brute Force*.
+Fungsi hashing kata sandi berbasis algoritma *Blowfish*. Bcrypt dirancang untuk menjadi lambat secara komputasi guna memperlambat serangan *Brute Force*.
 
-### **Ciphertext**
-Data yang telah dienkripsi sehingga tidak dapat dipahami tanpa kunci dekripsi yang tepat.
+### **Certificate Pinning**
+Teknik keamanan pada aplikasi mobile untuk hanya mempercayai sertifikat SSL spesifik milik server Anda, mencegah serangan *Man-in-the-Middle* (MitM).
 
-### **Initialization Vector (IV) / Nonce**
-Angka acak yang digunakan bersama kunci untuk mengenkripsi data. Nonce (*Number used once*) memastikan bahwa mengenkripsi data yang sama dua kali akan menghasilkan ciphertext yang berbeda.
+### **DLP (Data Loss Prevention)**
+Strategi keamanan untuk memastikan data sensitif tidak keluar dari organisasi secara tidak sah. Dalam buku ini diimplementasikan melalui *watermarking* dinamis pada PDF.
 
 ### **IDOR (Insecure Direct Object Reference)**
-Celah keamanan di mana pengguna dapat mengakses data milik orang lain hanya dengan mengganti parameter ID di URL (misal: mengganti `file/100` menjadi `file/101`). SovereignDrive mencegah ini menggunakan UUID.
+Celah keamanan di mana pengguna dapat mengakses data milik orang lain dengan mengganti parameter ID. SovereignDrive mencegah ini menggunakan UUIDv4 yang acak.
 
 ### **JWT (JSON Web Token)**
-Standar terbuka untuk berbagi klaim keamanan antara server dan client (biasanya mobile) secara *stateless*. Terdiri dari Header, Payload, dan Signature.
+Standar untuk berbagi klaim keamanan antara server dan mobile secara *stateless*. Terdiri dari Header, Payload, dan Signature.
 
-### **Zero-Trust Architecture**
-Model keamanan yang berasumsi bahwa ancaman bisa datang dari mana saja (dalam atau luar jaringan). Di SovereignDrive, ini berarti server tidak dipercaya untuk melihat data asli, sehingga enkripsi dilakukan sebelum data disimpan.
+### **Little-Endian**
+Urutan penyimpanan byte di mana byte yang paling tidak signifikan disimpan di alamat memori terendah. Digunakan dalam struktur biner `.enc` agar file konsisten di berbagai arsitektur CPU (Intel/ARM).
+
+### **Nonce (Number Used Once)**
+Angka acak unik yang digunakan hanya sekali dalam enkripsi AES-GCM untuk memastikan ciphertext selalu berbeda meskipun data aslinya sama.
 
 ---
 
-## 🧠 Kecerdasan Buatan (AI) & NLP
+## 🧠 Kecerdasan Buatan (AI) & Pencarian
 
 ### **Inverted Index**
-Struktur data inti pada search engine (seperti Elasticsearch). Alih-alih memetakan Dokumen ke Kata, Inverted Index memetakan Kata ke Dokumen, memungkinkan pencarian teks penuh yang instan.
+Struktur data inti pada Elasticsearch. Memetakan kata kunci ke daftar dokumen secara langsung, memungkinkan pencarian jutaan data dalam milidetik.
 
 ### **Lemmatization**
-Proses NLP untuk mengembalikan kata ke bentuk dasarnya berdasarkan kamus (misal: "memakan" menjadi "makan"). Berbeda dengan *Stemming* yang hanya memotong imbuhan secara kasar.
+Proses NLP untuk mengembalikan kata ke bentuk dasarnya berdasarkan kamus (misal: "mewarnai" menjadi "warna").
 
 ### **OCR (Optical Character Recognition)**
-Teknologi untuk mengekstraksi teks dari gambar atau dokumen hasil scan (seperti PDF gambar) menjadi teks digital yang bisa diedit dan dicari.
+Teknologi mengekstraksi teks dari gambar atau hasil scan menggunakan mesin seperti Tesseract.
 
-### **Stopwords**
-Kata-kata umum yang sering muncul dalam bahasa (seperti "yang", "di", "dan") namun tidak memiliki nilai penting dalam pencarian informasi, sehingga biasanya dibuang dalam proses *indexing*.
+### **PyMuPDF (Fitz)**
+Library berperforma tinggi untuk memproses PDF. Jauh lebih cepat daripada OCR konvensional untuk PDF yang sudah memiliki teks digital.
 
-### **Tokenization**
-Proses memecah aliran teks menjadi potongan-potongan kecil yang disebut token (biasanya berupa kata-kata individu).
+### **Relevance Scoring**
+Algoritma untuk menentukan urutan hasil pencarian berdasarkan kemiripan teks. SovereignDrive menjaga skor ini di database menggunakan logika *Case/When*.
 
 ---
 
 ## ⚙️ Infrastruktur & Software Engineering
 
-### **Asynchronous Task**
-Tugas yang dijalankan di latar belakang tanpa menghentikan proses utama. Di SovereignDrive, OCR dan Enkripsi dilakukan secara asinkron agar pengguna tidak perlu menunggu lama saat mengunggah file.
+### **Audit Log**
+Catatan permanen dan tidak dapat diubah (immutable) tentang siapa yang melakukan apa, kapan, dan di mana. Sangat krusial untuk audit kepatuhan (compliance).
 
-### **Bulk Operations**
-Teknik melakukan banyak operasi database (seperti update atau delete ribuan baris) dalam satu perintah SQL tunggal untuk meningkatkan performa secara drastis.
+### **CleanupFileResponse**
+Pola desain (pattern) kustom untuk menjamin file sementara di disk server terhapus secara otomatis segera setelah pengiriman data ke pengguna selesai.
 
-### **CI/CD (Continuous Integration / Continuous Deployment)**
-Praktik otomatisasi dalam pengembangan perangkat lunak, di mana kode dites secara otomatis setiap kali ada perubahan, dan dideploy ke server jika lolos pengujian.
+### **Chunked Upload**
+Metode mengunggah file besar dengan membaginya menjadi potongan-potongan kecil (chunks) agar lebih stabil terhadap gangguan koneksi internet.
+
+### **F() Expressions**
+Fitur Django untuk melakukan operasi matematika langsung di level database SQL, mencegah *Race Condition* saat memperbarui kuota penyimpanan.
 
 ### **Idempotency**
-Sifat suatu operasi yang jika dijalankan berkali-kali akan memberikan hasil yang sama. Sangat penting dalam antrean tugas (Celery) agar pengiriman ulang tugas yang gagal tidak merusak data.
+Sifat operasi yang memberikan hasil yang sama meskipun dijalankan berulang kali. Penting agar tugas Celery yang di-*retry* tidak menduplikasi data.
 
-### **Message Broker**
-Perangkat lunak (seperti Redis atau RabbitMQ) yang berfungsi sebagai perantara untuk menerima pesan tugas dari aplikasi dan menyimpannya hingga dikerjakan oleh *worker*.
+### **License Gatekeeper**
+Mekanisme validasi kunci lisensi saat aplikasi dijalankan (startup), memastikan integritas distribusi perangkat lunak.
 
-### **N+1 Query Problem**
-Masalah performa di mana aplikasi melakukan terlalu banyak query kecil ke database di dalam sebuah loop, padahal bisa dilakukan dalam satu query besar menggunakan *JOIN*.
+### **NamedTemporaryFile**
+Teknik manajemen memori di mana data besar ditulis ke file sementara di disk (bukan RAM), mencegah error *Out-of-Memory* (OOM).
 
-### **OOM (Out-of-Memory)**
-Kondisi di mana aplikasi mencoba menggunakan lebih banyak RAM daripada yang tersedia di server, biasanya menyebabkan sistem *crash*. SovereignDrive mencegah ini dengan teknik *streaming*.
+### **SSO (Single Sign-On)**
+Sistem autentikasi yang memungkinkan pengguna login ke berbagai aplikasi menggunakan satu identitas terpusat (seperti Google atau Azure AD).
 
-### **UUID (Universally Unique Identifier)**
-String 128-bit yang digunakan sebagai pengenal unik yang secara matematis mustahil untuk diduplikasi, bahkan antar sistem yang berbeda.
+### **X-Accel-Redirect**
+Fitur Nginx untuk mengambil alih tugas pengiriman file besar dari Django, meningkatkan performa server secara signifikan melalui pengalihan internal.
 
 ---
 
-## 🛠️ Tools & Library
+## 🛠️ Daftar Alat & Library Utama
 
-- **Celery:** Distributed Task Queue untuk Python.
-- **Daphne/Gunicorn:** Server untuk menjalankan aplikasi Django di produksi.
-- **Elasticsearch:** Mesin pencari dan analitik terdistribusi.
-- **NLTK:** Natural Language Toolkit untuk pemrosesan teks.
-- **Tesseract:** Mesin OCR open-source dari Google.
-- **WhiteNoise:** Middleware Django untuk melayani file statis secara efisien.
+- **Bandit:** Alat analisis statis untuk menemukan celah keamanan dalam kode Python.
+- **Celery Beat:** Penjadwal tugas (scheduler) untuk menjalankan tugas rutin seperti pembersihan disk dan audit kuota.
+- **Daphne:** Server ASGI yang memungkinkan Django menangani WebSocket dan protokol asinkron.
+- **Flower:** Dashboard monitoring real-time untuk memantau kesehatan koki digital (Celery Workers).
+- **Redis:** Sistem penyimpanan data di memori yang digunakan sebagai *Message Broker* dan *Cache*.
+- **uv:** Paket manajer Python berbasis Rust yang super cepat (10x lebih cepat dari pip).

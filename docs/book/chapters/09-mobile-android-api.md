@@ -25,28 +25,26 @@ Ponsel Android tidak menyimpan *cookie* seperti browser. SovereignDrive mengguna
 
 ## 9.2. Bedah Kode: Serializer & Security Hardening
 
-Berikut adalah implementasi di `storage/api/serializers.py` untuk mengoptimalkan data yang dikirim:
+Berikut adalah implementasi di `storage/api/serializers.py` untuk mengoptimalkan data yang dikirim ke aplikasi mobile:
 
 ```python
-from rest_framework import serializers
-from storage.models import File
-
 class FileSerializer(serializers.ModelSerializer):
-    # [1] Custom Field: Konversi Byte ke Megabyte di level API
-    size_mb = serializers.SerializerMethodField()
+    size_formatted = serializers.SerializerMethodField()
+    approval_status = serializers.CharField(source='approval.status', read_only=True)
 
     class Meta:
         model = File
-        fields = ['id', 'name', 'size_mb', 'created_at', 'thumbnail']
-        read_only_fields = ['id', 'created_at']
-
-    def get_size_mb(self, obj):
-        return round(obj.size / (1024 * 1024), 2)
+        fields = ['id', 'name', 'size_formatted', 'created_at', 'approval_status']
 ```
 
-**Analisis Teknikal:**
-- **`SerializerMethodField`**: Memungkinkan kita melakukan transformasi data (seperti perhitungan unit) di level API, sehingga aplikasi mobile tidak perlu melakukan kalkulasi berat.
-- **Field Minimization**: Kita tidak mengirimkan *path* fisik file di server untuk mencegah peretasan melalui informasi struktur direktori.
+### 9.2.1. Versioning: Menjaga Sejarah Data
+Aplikasi mobile SovereignDrive mendukung fitur **Versioning**. Jika pengguna mengunggah revisi baru dari dokumen yang sama, versi lama tidak hilang melainkan disimpan sebagai *archive*.
+- **Endpoint API**: `/api/v1/files/{id}/versions/`
+- **Audit Trail**: Setiap pergantian versi dicatat di tabel Audit Log untuk keperluan audit keamanan.
+
+### 9.2.2. Enterprise Approval Flow
+Untuk lingkungan perusahaan, unggahan file dari mobile mungkin memerlukan persetujuan admin. 
+- **Status `approval_status`**: API mengirimkan status (`pending`, `approved`, `rejected`) secara transparan. Aplikasi mobile dapat menampilkan indikator "Menunggu Persetujuan" sebelum file bisa dibagikan ke pihak lain.
 
 ---
 
