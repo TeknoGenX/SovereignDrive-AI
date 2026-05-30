@@ -19,6 +19,16 @@ def public_download(request, public_id):
     )
 
     try:
+        # LOG AKSES (Penting untuk Audit di Produksi)
+        from storage.services.audit_service import log_action
+        log_action(
+            user=None, # Anonim
+            action='download',
+            target_object=file_obj,
+            description=f"Public download via ID: {public_id}",
+            request=request
+        )
+
         file_obj.file.seek(0)
         content_type = mimetypes.guess_type(file_obj.name)[0] or 'application/octet-stream'
         

@@ -1,21 +1,43 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from storage.models import File
+from storage.selectors.access_selector import get_file_access_role
 
 class FileCollabConsumer(AsyncWebsocketConsumer):
     """
     Consumer untuk kolaborasi real-time pada file tertentu.
-    Menangani Live Cursor dan Broadcast Komentar.
+    Menangani Live Cursor dan Broadcast Komentar dengan Auth Check.
     """
     async def connect(self):
+        self.user = self.scope['user']
         self.file_id = self.scope['url_route']['kwargs']['file_id']
         self.room_group_name = f'file_{self.file_id}'
 
-        # Gabung ke grup file
+        # 1. CEK OTENTIKASI & AKSES
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+
+        has_access = await self.check_file_access(self.file_id, self.user)
+        if not has_access:
+            await self.close()
+            return
+
+        # 2. Gabung ke grup file
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
         await self.accept()
+
+    @database_sync_to_async
+    def check_file_access(self, file_id, user):
+        try:
+            file_obj = File.objects.get(id=file_id, is_trashed=False)
+            return get_file_access_role(file_obj, user) is not None
+        except File.DoesNotExist:
+            return False
 
     async def disconnect(self, close_code):
         # Keluar dari grup

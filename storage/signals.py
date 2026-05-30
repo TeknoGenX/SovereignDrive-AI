@@ -1,12 +1,30 @@
 # /home/andi-liani/code/awan/storage/signals.py
 
 import os
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 from storage.models import File, UserProfile
+
+# ==========================================
+# 0. CAPTURE OLD STATE FOR QUOTA TRACKING
+# ==========================================
+@receiver(pre_save, sender=File)
+def capture_old_is_trashed(sender, instance, **kwargs):
+    """
+    Simpan status is_trashed lama ke dalam instance sementara
+    agar bisa dibandingkan di post_save.
+    """
+    if instance.pk:
+        try:
+            old_instance = File.objects.get(pk=instance.pk)
+            instance._old_is_trashed = old_instance.is_trashed
+        except File.DoesNotExist:
+            instance._old_is_trashed = None
+    else:
+        instance._old_is_trashed = None
 
 # ==========================================
 # 1. OTOMATIS BUAT PROFIL SAAT USER MENDAFTAR
@@ -18,8 +36,6 @@ def create_user_profile(sender, instance, created, **kwargs):
     """
     if created:
         UserProfile.objects.get_or_create(user=instance)
-
-from django.db.models import F
 
 # ==========================================
 # 2. OTOMATIS UPDATE KUOTA SECARA INKREMENTAL
@@ -36,16 +52,18 @@ def update_quota_on_save(sender, instance, created, **kwargs):
                 storage_used=F('storage_used') + instance.size
             )
     else:
-        # Deteksi perubahan status is_trashed (Jika Django mendukung model_utils Tracker lebih bagus, 
-        # tapi di sini kita gunakan pengecekan manual sederhana atau asumsikan status berubah)
-        # Logika: Jika is_trashed baru saja di-set ke False (Restore)
-        # Kita butuh state sebelumnya. Untuk audit ini, kita asumsikan 
-        # sinyal dipicu oleh operasi yang merubah is_trashed.
+        # Deteksi perubahan status is_trashed
+        old_is_trashed = getattr(instance, '_old_is_trashed', None)
         
-        # Sederhananya, jika kita ingin akurat tanpa state lama, kita bisa 
-        # memisahkan fungsi pemanggil atau menggunakan init signal.
-        # Namun untuk stabilitas, kita pastikan restore_file memanggil ini.
-        pass
+        if old_is_trashed is not None and old_is_trashed != instance.is_trashed:
+            if instance.is_trashed: # False -> True (Masuk Sampah)
+                UserProfile.objects.filter(user=instance.owner).update(
+                    storage_used=F('storage_used') - instance.size
+                )
+            else: # True -> False (Restore dari Sampah)
+                UserProfile.objects.filter(user=instance.owner).update(
+                    storage_used=F('storage_used') + instance.size
+                )
 
 @receiver(post_delete, sender=File)
 def update_quota_on_delete(sender, instance, **kwargs):

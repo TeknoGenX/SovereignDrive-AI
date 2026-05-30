@@ -15,49 +15,57 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key')
 
 # ==========================================
-# 🔐 ENCRYPTION KEY (AES-256 HASHING)
+# 🔐 ENCRYPTION KEY (Decoupled from SECRET_KEY)
 # ==========================================
-raw_key = config('AES_MASTER_KEY', default='fallback-encryption-key').encode('utf-8')
-AES_MASTER_KEY = hashlib.sha256(raw_key).digest() # Pasti 32-byte (256-bit)
-ENCRYPTION_KEY = SECRET_KEY 
+# PENTING: Jangan gunakan SECRET_KEY untuk enkripsi file. 
+# Jika SECRET_KEY dirotasi, semua file terenkripsi akan hilang.
+# Gunakan AES_MASTER_KEY khusus yang statis.
+raw_encryption_key = config('AES_MASTER_KEY', default=SECRET_KEY)
+ENCRYPTION_KEY = hashlib.sha256(raw_encryption_key.encode('utf-8')).hexdigest()
 
 # ==========================================
 # 🌐 KEAMANAN & DOMAIN
 # ==========================================
-DEBUG = True 
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*'] # Izinkan semua domain (Localhost, IP, Tunnel) sementara
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Agar form dan webhook via Tunnel publik tidak terkena blokir CSRF
-CSRF_TRUSTED_ORIGINS = [
-    'http://minicloud.com', 
-    'https://minicloud.com', 
-    'http://127.0.0.1',
-    'http://localhost',
-    'http://100.92.144.96',
-    'https://100.92.144.96',
-    'https://*.pinggy.link', 
-    'https://*.loca.lt',
-    'https://*.lhr.life'
-]
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost,http://127.0.0.1').split(',')
+
+# Tambahkan domain tunnel hanya jika DEBUG=True
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += [
+        'https://*.pinggy.link', 
+        'https://*.loca.lt',
+        'https://*.lhr.life'
+    ]
 
 # ==========================================
-# ⚙️ DOCKER UTILS (Helper for IP discovery)
+# ⚙️ INFRASTRUCTURE UTILS
 # ==========================================
 def get_docker_ip(container_name, default='127.0.0.1'):
+    """
+    Helper untuk mencari IP container Docker secara otomatis.
+    Hanya dijalankan jika lingkungan memiliki akses ke socket docker.
+    """
+    if os.environ.get('SKIP_DOCKER_LOOKUP', 'False') == 'True':
+        return default
+        
     try:
         result = subprocess.run(
             ['docker', 'inspect', '-f', '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}', container_name],
-            capture_output=True, text=True, check=True
+            capture_output=True, text=True, check=True, timeout=2
         )
         ip = result.stdout.strip()
         return ip if ip else default
     except Exception:
+        # Jika gagal (docker tidak ada/tidak diizinkan), gunakan default
         return default
 
-REDIS_HOST = os.environ.get('REDIS_HOST', get_docker_ip('private-cloud-redis-1'))
-DB_HOST = os.environ.get('DB_HOST', get_docker_ip('private-cloud-db-1'))
-ES_HOST = os.environ.get('ES_HOST', get_docker_ip('private-cloud-elasticsearch-1', 'localhost'))
+REDIS_HOST = config('REDIS_HOST', default=get_docker_ip('private-cloud-redis-1'))
+DB_HOST = config('DB_HOST', default=get_docker_ip('private-cloud-db-1'))
+ES_HOST = config('ES_HOST', default=get_docker_ip('private-cloud-elasticsearch-1', 'localhost'))
 
 # ==========================================
 # 📦 INSTALLED APPS

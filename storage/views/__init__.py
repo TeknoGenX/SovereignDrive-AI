@@ -6,7 +6,7 @@ from .dashboard import dashboard
 from .folder_detail import folder_detail
 from .delete_file import delete_file
 from .delete_folder import delete_folder
-from .download_file import download_file
+from .download_file import download_file, check_download_status
 from .edit_file import edit_file
 from .file_detail import file_detail
 from .get_user_profile import get_user_profile

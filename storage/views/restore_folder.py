@@ -15,7 +15,13 @@ def restore_folder(request, folder_id):
     folder_obj.save()
     
     # 2. Pulihkan Semua File di Dalamnya secara Otomatis
-    files_restored = File.objects.filter(folder=folder_obj, owner=request.user).update(is_trashed=False)
+    # Menggunakan loop agar signal terpicu (Kuota + Indexing)
+    files = File.objects.filter(folder=folder_obj, owner=request.user, is_trashed=True)
+    count = 0
+    for f in files:
+        f.is_trashed = False
+        f.save()
+        count += 1
     
-    messages.success(request, f"Folder '{folder_obj.name}' dan {files_restored} file di dalamnya berhasil dipulihkan.")
+    messages.success(request, f"Folder '{folder_obj.name}' dan {count} file di dalamnya berhasil dipulihkan.")
     return redirect('storage:trash_bin')

@@ -24,8 +24,8 @@ from storage.services.upload_service import upload_file as service_upload_file
 @csrf_exempt
 def telegram_webhook(request):
     """
-    Webhook Telegram yang AMAN: Mendukung Enkripsi AES, Cek Kuota, 
-    dan Verifikasi Identitas User via Chat ID.
+    Webhook Telegram yang AMAN & ASINKRON: 
+    Validasi via telegram_chat_id dan offload kerja berat ke Celery.
     """
     # 0. VERIFIKASI TOKEN (Safety Gate)
     webhook_token = request.GET.get('token')
@@ -40,46 +40,33 @@ def telegram_webhook(request):
     try:
         update = json.loads(request.body.decode('utf-8'))
         
-        # Validasi struktur pesan Telegram
         if 'message' in update and 'document' in update['message']:
             message = update['message']
-            chat_id = message['chat']['id']
+            chat_id = str(message['chat']['id'])
             doc = message['document']
             
-            # 1. IDENTIFIKASI USER (Via mapping Chat ID di Profile)
-            # Trik Hackathon: Kita cari profile yang punya chat_id cocok
-            # Jika tidak ada, kita tolak demi privasi.
-            try:
-                profile = UserProfile.objects.get(user__username=str(chat_id)) # Simulasi mapping
-                user = profile.user
-            except UserProfile.DoesNotExist:
-                # Fallback: Tolak jika user tidak dikenal
+            # 1. IDENTIFIKASI USER (Via telegram_chat_id di Profile)
+            if not UserProfile.objects.filter(telegram_chat_id=chat_id).exists():
                 return JsonResponse({"status": "user unknown"}, status=403)
 
-            # 2. DOWNLOAD FILE DARI TELEGRAM
+            # 2. OFF-LOAD KERJA KE CELERY (Disk-to-Disk & API calls)
+            from storage.tasks import process_telegram_upload_task
+            process_telegram_upload_task.delay(
+                chat_id, 
+                doc['file_id'], 
+                doc.get('file_name', 'telegram_file'),
+                doc.get('file_size', 0)
+            )
+
+            # 3. BALAS INSTAN KE TELEGRAM (User Experience)
             bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', '')
             api_url = f'https://api.telegram.org/bot{bot_token}'
-            
-            file_res = requests.get(f'{api_url}/getFile?file_id={doc["file_id"]}').json()
-            file_path = file_res['result']['file_path']
-            download_url = f'https://api.telegram.org/file/bot{bot_token}/{file_path}'
-            
-            file_content = requests.get(download_url).content
-            
-            # 3. WRAP CONTENT (Agar sesuai dengan upload_service)
-            uploaded_file = SimpleUploadedFile(doc['file_name'], file_content)
-
-            # 4. ENCRYPT & SAVE (Gunakan Service Pusat)
-            # Ini otomatis: Enkripsi AES + Update Kuota + Trigger AI Indexing
-            new_file = service_upload_file(user, uploaded_file)
-
-            # 5. BALAS KE TELEGRAM
             requests.post(f'{api_url}/sendMessage', data={
                 'chat_id': chat_id,
-                'text': f'🔒 File "{new_file.name}" AMAN & TERENKRIPSI di AWAN Cloud!'
+                'text': f'⏳ Sedang memproses file "{doc.get("file_name")}"... Mohon tunggu.'
             })
 
-            return JsonResponse({"status": "success", "file_id": str(new_file.id)})
+            return JsonResponse({"status": "processing_started"})
 
         return JsonResponse({"status": "ignored"})
 

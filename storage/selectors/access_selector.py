@@ -29,7 +29,16 @@ def get_file_access_role(file_obj, user):
 
     # Telusuri ke atas (Parent Traversal)
     curr_folder_id = file_obj.folder_id
-    while curr_folder_id:
+    visited_ids = set()
+    max_depth = 50 # Limit keamanan untuk mencegah infinite loop atau struktur terlalu dalam
+
+    while curr_folder_id and len(visited_ids) < max_depth:
+        # Detect Cycle
+        if curr_folder_id in visited_ids:
+            print(f"⚠️ Terdeteksi Circular Reference pada folder {curr_folder_id}")
+            break
+        visited_ids.add(curr_folder_id)
+
         # A. Cek apakah folder ini ada di daftar yang di-share ke user
         if curr_folder_id in user_folder_accesses:
             return user_folder_accesses[curr_folder_id]

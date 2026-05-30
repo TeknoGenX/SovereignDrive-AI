@@ -11,7 +11,11 @@ def shared_link_view(request, share_id):
     """
     shared_link = get_object_or_404(SharedLink, share_id=share_id, is_active=True)
 
-    # 1. Cek Expiry
+    # 1. Cek Expiry & Trash Status
+    target = shared_link.file if shared_link.file else shared_link.folder
+    if not target or target.is_trashed:
+        return render(request, 'storage/shared/expired.html', {'message': 'Konten ini telah dihapus.'}, status=404)
+
     if shared_link.is_expired:
         return render(request, 'storage/shared/expired.html', status=410)
 
@@ -72,9 +76,19 @@ def shared_link_view(request, share_id):
 
 def _serve_decrypted_file(file_obj):
     file_obj.file.seek(0)
+    
+    # Deteksi tipe konten
+    import mimetypes
+    content_type = mimetypes.guess_type(file_obj.name)[0] or 'application/octet-stream'
+
+    # Stream file yang sudah didekripsi
     response = StreamingHttpResponse(
         decrypt_stream(file_obj.file),
-        content_type='application/octet-stream'
+        content_type=content_type
     )
     response['Content-Disposition'] = f'attachment; filename="{file_obj.name}"'
+    
+    if file_obj.size:
+        response['Content-Length'] = file_obj.size
+        
     return response

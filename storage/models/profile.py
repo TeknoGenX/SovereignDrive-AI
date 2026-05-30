@@ -16,6 +16,9 @@ class UserProfile(models.Model):
     storage_used = models.BigIntegerField(default=0)
 
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    
+    # Field untuk integrasi Telegram yang aman
+    telegram_chat_id = models.CharField(max_length=100, null=True, blank=True, unique=True, db_index=True)
 
     def __str__(self):
         return f"Profil: {self.user.username}"

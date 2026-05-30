@@ -44,16 +44,8 @@ def upload_file(request):
                 if is_ajax: return JsonResponse({'error': 'Akses Ditolak.'}, status=403)
                 return HttpResponseForbidden("Akses Ditolak.")
 
-    # Validasi Kuota
-    profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    if profile.storage_used + uploaded_file.size > profile.storage_limit:
-        msg = "Kuota penyimpanan penuh! Gagal mengunggah."
-        if is_ajax: return JsonResponse({'error': msg}, status=400)
-        messages.error(request, msg)
-        return redirect('storage:dashboard')
-
     try:
-        # Panggil service upload yang sudah dioptimasi (Streaming + Encryption)
+        # Panggil service upload yang sudah dioptimasi (Streaming + Encryption + Quota Lock)
         new_file = service_upload_file(request.user, uploaded_file, target_folder)
 
         if is_ajax:

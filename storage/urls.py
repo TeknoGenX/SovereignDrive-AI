@@ -28,6 +28,7 @@ urlpatterns = [
     path('file/<uuid:file_id>/', views.file_detail, name='file_detail'),
     path('file/<uuid:file_id>/view/', views.view_file, name='view_file'),
     path('file/<uuid:file_id>/download/', views.download_file, name='download_file'),
+    path('file/<uuid:file_id>/download/status/', views.check_download_status, name='check_download_status'),
     path('file/<uuid:file_id>/edit/', views.edit_file, name='edit_file'),
     path('file/<uuid:file_id>/delete/', views.delete_file, name='delete_file'),
     path('file/<uuid:file_id>/share/', views.share_file, name='share_file'),

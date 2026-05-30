@@ -1,33 +1,67 @@
 # storage/services/upload_service.py
 
+import os
+import tempfile
 from django.db import transaction
+from django.core.files.base import ContentFile
 from storage.models import File, UserProfile
+from .encryption import encrypt_stream
+
+class EncryptedStreamWrapper(object):
+    """
+    Wrapper sederhana untuk mengubah generator encrypt_stream menjadi 
+    objek yang bisa dibaca oleh Django FileField.
+    """
+    def __init__(self, stream_gen):
+        self.gen = stream_gen
+        self.buffer = b''
+
+    def read(self, size=-1):
+        try:
+            while size == -1 or len(self.buffer) < size:
+                self.buffer += next(self.gen)
+        except StopIteration:
+            pass
+        
+        if size == -1:
+            res, self.buffer = self.buffer, b''
+        else:
+            res, self.buffer = self.buffer[:size], self.buffer[size:]
+        return res
 
 def upload_file(user, uploaded_file, target_folder=None):
     """
-    Layanan untuk mengunggah file dan menyimpannya ke database.
-    Pembaruan kuota ditangani secara otomatis oleh signals (storage/signals.py).
-    Trigger Celery tasks juga ditangani secara otomatis oleh signals.
+    Layanan untuk mengunggah file dengan enkripsi AES-256 GCM.
+    Dioptimalkan untuk mengurangi Disk I/O ganda.
     """
+    original_size = uploaded_file.size
+    
     with transaction.atomic():
-        # 1. Pastikan profil pengguna ada
-        profile, _ = UserProfile.objects.get_or_create(user=user)
+        # 1. Pessimistic Locking untuk Kuota
+        profile, _ = UserProfile.objects.select_for_update().get_or_create(user=user)
         
-        # 2. Cek kuota sebelum upload (Safety Layer)
-        if profile.storage_used + uploaded_file.size > profile.storage_limit:
-            raise Exception("Kuota penyimpanan penuh! Gagal mengunggah file.")
-            
-        # 3. Simpan file ke database
-        # Post-save signal akan otomatis:
-        # - Menambah profile.storage_used (kuota inkremental)
-        # - Memicu Celery task (Thumbnail & AI Indexing) di storage/signals.py
+        if profile.storage_used + original_size > profile.storage_limit:
+            raise ValueError("Kuota penyimpanan penuh! Gagal mengunggah file.")
+
+        # 2. TAHAP ENKRIPSI & SIMPAN
+        # Kita gunakan ContentFile dengan wrapper generator agar Django 
+        # melakukan streaming enkripsi langsung saat menulis ke media storage.
+        uploaded_file.seek(0)
+        encrypted_wrapper = EncryptedStreamWrapper(encrypt_stream(uploaded_file))
+        
         new_file = File.objects.create(
             name=uploaded_file.name,
-            file=uploaded_file,
             owner=user,
             folder=target_folder,
-            size=uploaded_file.size,
+            size=original_size,
             is_trashed=False
+        )
+        
+        # Simpan file secara streaming (mengurangi 1x siklus write ke /tmp)
+        new_file.file.save(
+            uploaded_file.name,
+            encrypted_wrapper,
+            save=True
         )
         
         return new_file
